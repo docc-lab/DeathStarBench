@@ -29,6 +29,12 @@ func WithBalancer(registry *consul.Client) DialOption {
 	}
 }
 
+func WithConnTimeout(registry *consul.Client) DialOption {
+	return func(name string) (grpc.DialOption, error) {
+		return  grpc.EmptyDialOption{}, nil
+	}
+}
+
 // Dial returns a load balanced grpc client conn with tracing interceptor
 func Dial(name string, opts ...DialOption) (*grpc.ClientConn, error) {
 
@@ -49,7 +55,13 @@ func Dial(name string, opts ...DialOption) (*grpc.ClientConn, error) {
 		if err != nil {
 			return nil, fmt.Errorf("config error: %v", err)
 		}
-		dialopts = append(dialopts, opt)
+		if _, ok := opt.(grpc.EmptyDialOption); ok {
+			if cto, ok := fn.(func(string) (grpc.DialOption, error)); ok {
+				connection_timeout = cto(name).(time.Duration)
+			}
+		} else{
+			dialopts = append(dialopts, opt)
+		}
 	}
 
 	conn, err := grpc.Dial(name, dialopts...)

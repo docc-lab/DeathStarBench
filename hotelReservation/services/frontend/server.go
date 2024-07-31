@@ -48,6 +48,13 @@ type Server struct {
 	Registry   *registry.Client
 }
 
+// struc for adding connection timeout to grpc dial
+type Option func(*grpcConnOptions)
+
+type grpcConnOptions struct {
+	timeout time.Duration
+}
+
 // Run the server
 func (s *Server) Run() error {
 	if s.Port == 0 {
@@ -134,6 +141,8 @@ func (s *Server) initReviewClient(name string) error {
 		name,
 		dialer.WithTracer(s.Tracer),
 		dialer.WithBalancer(s.Registry.Client),
+		//an example of using modified dialer.go directly
+		dialer.WithConnTimeout(1*time.Second),
 	)
 	if err != nil {
 		return fmt.Errorf("dialer error: %v", err)
@@ -191,20 +200,43 @@ func (s *Server) initReservation(name string) error {
 	return nil
 }
 
-func (s *Server) getGprcConn(name string) (*grpc.ClientConn, error) {
+// optional parameter helper func for setting timeout in getGprcConn func
+func WithTimeout(timeout time.Duration) Option {
+	return func(o *grpcConnOptions) {
+		o.timeout = timeout
+	}
+}
+
+// Need to handle dns option along with added optional timeout parameter getGprcConn
+func (s *Server) getGprcConn(name string, opts ...Option) (*grpc.ClientConn, error) {
 	log.Info().Msg("get Grpc conn is :")
 	log.Info().Msg(s.KnativeDns)
 	log.Info().Msg(fmt.Sprintf("%s.%s", name, s.KnativeDns))
 
+	// define & init timeout
+	options := grpcConnOptions{ timeout: 5 * time.Second}
+	for _, opt := range opts{
+		opt(&options)
+	}
+
+	// hanld other existing optional parameters
+	var dialOpt []dialer.DialOption
+	dialOpts = append(dialOpts, dialer.WithTracer(s.Tracer))
+	if s.KnativeDns != "" {
+		dialOpts = append(dialOpts, dialer.WithBalancer(s.Registry.Client))
+	}
+
+	dialOpts = append(dialOpts, dialer.WithConnTimeout(options.timeout))
+
 	if s.KnativeDns != "" {
 		return dialer.Dial(
 			fmt.Sprintf("consul://%s/%s.%s", s.ConsulAddr, name, s.KnativeDns),
-			dialer.WithTracer(s.Tracer))
+			dialOpts...
+		)
 	} else {
 		return dialer.Dial(
 			fmt.Sprintf("consul://%s/%s", s.ConsulAddr, name),
-			dialer.WithTracer(s.Tracer),
-			dialer.WithBalancer(s.Registry.Client),
+			dialOpts...
 		)
 	}
 }
