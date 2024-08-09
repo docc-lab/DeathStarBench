@@ -1,4 +1,4 @@
-FROM golang:1.21 as builder
+FROM debian:buster-slim
 
 WORKDIR /workspace
 
@@ -14,7 +14,12 @@ COPY tls/ tls/
 COPY tracing/ tracing/
 COPY tune/ tune/
 
+COPY go/bin/* /go/bin/
+
 COPY config.json config.json
 
-RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go install -ldflags="-s -w" -mod=vendor ./cmd/...
+RUN chmod +x /go/bin/*
 
+# RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go install -ldflags="-s -w" -mod=vendor ./cmd/...
+
+ENV PATH="/go/bin:${PATH}"
