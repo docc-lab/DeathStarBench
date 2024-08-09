@@ -2,6 +2,7 @@ include .bingo/Variables.mk
 
 DOWNLOAD_DIR = /tmp
 BIN_DIR = $(shell pwd)/bin
+BUILD_DIR = $(shell pwd)/go/bin
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/osx/')
 ARCH := $(shell uname -m | sed 's/arm64/aarch_64/')
@@ -9,6 +10,8 @@ ARCH := $(shell uname -m | sed 's/arm64/aarch_64/')
 PROTOC_VERION = 25.0
 PROTOC_PACKAGE = protoc-$(PROTOC_VERION)-$(OS)-$(ARCH)
 PROTOC_BIN = $(BIN_DIR)/protoc
+
+EXECUTABLES = frontend geo profile rate recommendation reservation review search user attractions
 
 .PHONY: help
 help: ## Display this help.
@@ -31,6 +34,17 @@ run: ## Runs the application using docker-compose
 	docker-compose build
 	docker-compose up --remove-orphans
 
+.PHONY: build
+build: go-bin $(EXECUTABLES) ## Build go binaries
+
+.PHONY: $(EXECUTABLES)
+$(EXECUTABLES): go-bin
+	go build -o $(BUILD_DIR)/$@ ./services/$@
+
+.PHONY: go-bin
+go-bin:
+	mkdir -p $(BUILD_DIR)
+
 .PHONY: bin
 bin: ## Creates bin directory
 	mkdir -p $(BIN_DIR)
@@ -38,6 +52,7 @@ bin: ## Creates bin directory
 .PHONY: clean 
 clean: ## Removes all binaries in bin directory
 	rm -rf $(BIN_DIR)
+	rm -rf $(BUILD_DIR)
 	rm -f $(GOBIN)/protoc-gen-go
 
 .PHONY: protoc
