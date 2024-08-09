@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/delimitrou/DeathStarBench/tree/master/hotelReservation/dialer"
 	"github.com/delimitrou/DeathStarBench/tree/master/hotelReservation/registry"
@@ -214,19 +215,19 @@ func (s *Server) getGprcConn(name string, opts ...Option) (*grpc.ClientConn, err
 	log.Info().Msg(fmt.Sprintf("%s.%s", name, s.KnativeDns))
 
 	// define & init timeout
-	options := grpcConnOptions{ timeout: 5 * time.Second}
-	for _, opt := range opts{
-		opt(&options)
-	}
+    options := grpcConnOptions{timeout: 5 * time.Second}
+    for _, opt := range opts {
+        opt(&options)
+    }
 
 	// hanld other existing optional parameters
-	var dialOpt []dialer.DialOption
-	dialOpts = append(dialOpts, dialer.WithTracer(s.Tracer))
-	if s.KnativeDns != "" {
-		dialOpts = append(dialOpts, dialer.WithBalancer(s.Registry.Client))
-	}
+	var dialOpts []dialer.DialOption
+    dialOpts = append(dialOpts, dialer.WithTracer(s.Tracer))
+    if s.KnativeDns != "" {
+        dialOpts = append(dialOpts, dialer.WithBalancer(s.Registry.Client))
+    }
 
-	dialOpts = append(dialOpts, dialer.WithConnTimeout(options.timeout))
+    dialOpts = append(dialOpts, dialer.WithConnTimeout(options.timeout))
 
 	if s.KnativeDns != "" {
 		return dialer.Dial(
