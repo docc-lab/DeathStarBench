@@ -55,14 +55,7 @@ func Dial(name string, opts ...DialOption) (*grpc.ClientConn, error) {
 		if err != nil {
 			return nil, fmt.Errorf("config error: %v", err)
 		}
-		if opt == nil {
-			if cto, ok := fn.(func(string) (grpc.DialOption, error)); ok {
-				_, err := cto(name)
-				if err != nil {
-					return nil, fmt. Errorf("connection timeout error: %v", err)
-				}
-			}
-		} else {
+		if opt != nil {
 			dialopts = append(dialopts, opt)
 		}
 	}
