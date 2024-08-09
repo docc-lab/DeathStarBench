@@ -29,9 +29,9 @@ func WithBalancer(registry *consul.Client) DialOption {
 	}
 }
 
-func WithConnTimeout(registry *consul.Client) DialOption {
+func WithConnTimeout(t time.Duration) DialOption {
 	return func(name string) (grpc.DialOption, error) {
-		return  grpc.WithTime(timeout), nil
+		return  grpc.WithTimeout(t), nil
 	}
 }
 
