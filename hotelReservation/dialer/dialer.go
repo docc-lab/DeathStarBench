@@ -31,7 +31,7 @@ func WithBalancer(registry *consul.Client) DialOption {
 
 func WithConnTimeout(registry *consul.Client) DialOption {
 	return func(name string) (grpc.DialOption, error) {
-		return  grpc.EmptyDialOption{}, nil
+		return  grpc.WithTime(timeout), nil
 	}
 }
 
@@ -55,11 +55,14 @@ func Dial(name string, opts ...DialOption) (*grpc.ClientConn, error) {
 		if err != nil {
 			return nil, fmt.Errorf("config error: %v", err)
 		}
-		if _, ok := opt.(grpc.EmptyDialOption); ok {
+		if opt == nil {
 			if cto, ok := fn.(func(string) (grpc.DialOption, error)); ok {
-				connection_timeout = cto(name).(time.Duration)
+				_, err := cto(name)
+				if err != nil {
+					return nil, fmt. Errorf("connection timeout error: %v", err)
+				}
 			}
-		} else{
+		} else {
 			dialopts = append(dialopts, opt)
 		}
 	}
