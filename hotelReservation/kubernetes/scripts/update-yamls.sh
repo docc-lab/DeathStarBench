@@ -11,7 +11,8 @@ if [ "$is_local" != "y" ]; then
 fi
 
 # Find all *-deployment.yaml files and update the image line
-find "$YAML_DIR" -type f -name "*-deployment.yaml" -print0 | while IFS= read -r -d '' file; do
+# find "$YAML_DIR" -type f -name "*-deployment.yaml" -print0 | while IFS= read -r -d '' file; do
+find "$YAML_DIR" -type f -name "*-deployment.yaml" ! -name "memcached-*-deployment.yaml" ! -name "mongodb-*-deployment.yaml" -print0 | while IFS= read -r -d '' file; do
     # Extract the service name from the filename
     service_name=$(basename "$file" | sed 's/-deployment\.yaml//')
     
