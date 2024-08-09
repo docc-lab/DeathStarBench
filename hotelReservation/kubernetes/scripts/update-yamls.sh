@@ -1,11 +1,10 @@
 #!/bin/bash
 
-YAML_DIR="path/to/your/yaml/files"
+YAML_DIR="/local/DeathStarBench/hotelReservation/kubernetes"
 
 read -p "Are the images stored locally? (y/n): " is_local
 DOCKER_HUB_USER=""
 ALL_IN_ONE_IMAGE=""
-IMAGE_NAME=""
 
 if [ "$is_local" != "y" ]; then
     read -p "Enter your Docker Hub username: " DOCKER_HUB_USER
@@ -31,16 +30,16 @@ find "$YAML_DIR" -type f -name "*-deployment.yaml" ! -name "memcached-*-deployme
     
     if [ "$is_local" = "y" ]; then
         # Update the image line for local images
-        sed -i '/image:.*deathstarbench\/hotel_reservation/s|image:.*|          image: '"${image_name}"':latest|' "$file"
+        sed -i '/image: deathstarbench\/hotel-reservation:latest/c\          image: '"${image_name}"':latest' "$file"
     else
         # Update the image line for Docker Hub images
-        sed -i '/image:.*deathstarbench\/hotel_reservation/s|image:.*|          image: '"${DOCKER_HUB_USER}/${image_name}"':latest|' "$file"
+        sed -i '/image: deathstarbench\/hotel-reservation:latest/c\          image: '"${DOCKER_HUB_USER}/${image_name}"':latest' "$file"
     fi
     
     # Check if any changes were made
-    if [ "$(grep -c "image: ${image_name}:latest" "$file")" -gt 0 ] || [ "$(grep -c "image: ${DOCKER_HUB_USER}/${image_name}:latest" "$file")" -gt 0 ]; then
-        echo "Updated $file"
-    else
+    if [ -n "$(sed -n '/image: deathstarbench\/hotel-reservation:latest/p' "$file")" ]; then
         echo "No changes made to $file (pattern not found)"
+    else
+        echo "Updated $file"
     fi
 done
