@@ -1,0 +1,62 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: frontendservices.mycompany.com
+spec:
+  group: mycompany.com
+  names:
+    kind: FrontendService
+    listKind: FrontendServiceList
+    plural: frontendservices
+    singular: frontendservice
+    shortNames:
+      - fes
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  minimum: 1
+                image:
+                  type: string
+                command:
+                  type: array
+                  items:
+                    type: string
+                port:
+                  type: integer
+                resources:
+                  type: object
+                  properties:
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                annotations:
+                  type: object
+                  additionalProperties:
+                    type: string
+            status:
+              type: object
+              properties:
+                availableReplicas:
+                  type: integer
+                serviceStatus:
+                  type: string
+      subresources:
+        status: {}

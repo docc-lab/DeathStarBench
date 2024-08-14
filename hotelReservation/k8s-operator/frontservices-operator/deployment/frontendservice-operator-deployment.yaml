@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontendservice-operator
+  namespace: frontendservice-operator-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontendservice-operator
+  template:
+    metadata:
+      labels:
+        app: frontendservice-operator
+    spec:
+      serviceAccountName: frontendservice-operator
+      containers:
+      - name: frontendservice-operator
+        image: docclab/frontendservice-operator:latest
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
