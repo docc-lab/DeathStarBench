@@ -16,7 +16,7 @@ spec:
       serviceAccountName: frontendservice-operator
       containers:
       - name: frontendservice-operator
-        image: docclab/frontendservice-operator:latest
+        image: royno7/frontendservice-operator:v0.1.0
         resources:
           limits:
             cpu: 100m
