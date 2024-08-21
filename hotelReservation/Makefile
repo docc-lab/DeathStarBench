@@ -35,15 +35,12 @@ run: ## Runs the application using docker-compose
 	docker-compose up --remove-orphans
 
 .PHONY: build
-build: go-bin $(EXECUTABLES) ## Build go binaries
+build: $(EXECUTABLES) ## Build go binaries
 
 .PHONY: $(EXECUTABLES)
-$(EXECUTABLES): go-bin
-	go build -o $(BUILD_DIR)/$@ ./services/$@
-
-.PHONY: go-bin
-go-bin:
-	mkdir -p $(BUILD_DIR)
+$(EXECUTABLES):
+	mkdir -p $(BUILD_DIR)	
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o $(BUILD_DIR)/$@ ./cmd/$@
 
 .PHONY: bin
 bin: ## Creates bin directory
